@@ -1,250 +1,590 @@
-<!-- ========================================
-     카드 3 - 합성 실패 재생
-======================================== -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
 
-<section class="replay-section">
-
-    <div class="section-title">
-        <div>
-            <p class="eyebrow">FAILURE REPLAY</p>
-            <h2>외부 데이터 실패 재생</h2>
-        </div>
-
-        <p>
-            실제 사용자 데이터가 아닌 공개 합성 fixture 상태를 재생합니다.
-        </p>
-    </div>
-
-
-    <!-- 현재 데이터 상태 -->
-
-    <div class="replay-status-card">
-
-        <div>
-
-            <p class="info-label">
-                현재 데이터 상태
-            </p>
-
-            <strong id="readingStatus">
-                fresh
-            </strong>
-
-        </div>
-
-
-        <div>
-
-            <p class="info-label">
-                오류 코드
-            </p>
-
-            <strong id="errorCode">
-                none
-            </strong>
-
-        </div>
-
-
-        <div>
-
-            <p class="info-label">
-                저장된 일별 기록
-            </p>
-
-            <strong id="recordCount">
-                0건
-            </strong>
-
-        </div>
-
-    </div>
-
-
-    <!-- 오류 설명 -->
-
-    <div
-        class="failure-message"
-        id="failureMessage"
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
     >
 
-        <strong>
-            정상 상태입니다.
-        </strong>
+    <title>오늘의 진짜 정보판</title>
 
-        <p>
-            현재 데이터가 정상적으로 처리되었습니다.
-        </p>
-
-    </div>
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+</head>
 
 
-    <!-- 합성 fixture 버튼 -->
+<body>
 
-    <div class="fixture-controls">
-
-        <button
-            class="fixture-btn normal-btn"
-            data-fixture="T04-NORMAL-D1-A"
-        >
-            D1-A 정상
-        </button>
+    <main class="container">
 
 
-        <button
-            class="fixture-btn normal-btn"
-            data-fixture="T04-NORMAL-D1-B"
-        >
-            D1-B 정상
-        </button>
+        <!-- =====================================
+             헤더
+        ====================================== -->
+
+        <header class="hero">
+
+            <p class="eyebrow">
+                REAL INFORMATION BOARD
+            </p>
+
+            <h1>
+                오늘의 진짜 정보판
+            </h1>
+
+            <p class="hero-description">
+                실제 공개 데이터를 조회하고,
+                마지막 정상값을 보존하며,
+                데이터가 오지 않을 때도 현재 상태를 정직하게 설명합니다.
+            </p>
+
+        </header>
 
 
-        <button
-            class="fixture-btn normal-btn"
-            data-fixture="T04-NORMAL-D2"
-        >
-            D2 정상
-        </button>
+        <!-- =====================================
+             카드 1
+             실제 공개 데이터
+        ====================================== -->
 
+        <section class="dashboard-section">
 
-        <button
-            class="fixture-btn"
-            data-fixture="T04-TIMEOUT"
-        >
-            느린 응답
-        </button>
+            <div class="section-header">
 
+                <div>
 
-        <button
-            class="fixture-btn"
-            data-fixture="T04-AUTH-401"
-        >
-            401 거절
-        </button>
+                    <p class="eyebrow">
+                        LIVE DATA
+                    </p>
 
+                    <h2>
+                        USD → KRW 환율
+                    </h2>
 
-        <button
-            class="fixture-btn"
-            data-fixture="T04-RATE-429"
-        >
-            호출 제한
-        </button>
+                </div>
 
+                <span
+                    class="live-badge"
+                    id="liveStatus"
+                >
+                    실제 데이터 조회 중
+                </span>
 
-        <button
-            class="fixture-btn"
-            data-fixture="T04-OFFLINE"
-        >
-            오프라인
-        </button>
-
-
-        <button
-            class="fixture-btn"
-            data-fixture="T04-SCHEMA-BREAK"
-        >
-            형식 변경
-        </button>
-
-    </div>
-
-
-    <!-- 마지막 정상값 -->
-
-    <div class="last-good-card">
-
-        <div class="last-good-title">
-
-            <div>
-                <p class="eyebrow">
-                    LAST KNOWN GOOD
-                </p>
-
-                <h3>
-                    마지막 정상값
-                </h3>
             </div>
 
 
-            <span
-                class="stale-badge"
-                id="staleBadge"
+            <!-- 실제 값 -->
+
+            <div class="main-value-card">
+
+                <p class="info-label">
+                    현재 값
+                </p>
+
+                <div class="exchange-value">
+
+                    <span id="exchangeValue">
+                        -
+                    </span>
+
+                    <span class="currency">
+                        KRW
+                    </span>
+
+                </div>
+
+                <p class="value-description">
+                    1 USD당 KRW 환율
+                </p>
+
+            </div>
+
+
+            <!-- 정보 -->
+
+            <div class="info-grid">
+
+                <div class="info-card">
+
+                    <p class="info-label">
+                        단위
+                    </p>
+
+                    <strong>
+                        KRW per 1 USD
+                    </strong>
+
+                </div>
+
+
+                <div class="info-card">
+
+                    <p class="info-label">
+                        출처
+                    </p>
+
+                    <strong id="source">
+                        조회 중
+                    </strong>
+
+                </div>
+
+
+                <div class="info-card">
+
+                    <p class="info-label">
+                        출처 시각
+                    </p>
+
+                    <strong id="sourceTime">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="info-card">
+
+                    <p class="info-label">
+                        조회 시각
+                    </p>
+
+                    <strong id="fetchedAt">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="info-card">
+
+                    <p class="info-label">
+                        기준 시간대
+                    </p>
+
+                    <strong>
+                        Asia/Seoul (KST)
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- 원자료 / 저장값 / 화면값 -->
+
+            <div class="comparison-card">
+
+                <div class="comparison-header">
+
+                    <p class="eyebrow">
+                        DATA COMPARISON
+                    </p>
+
+                    <h3>
+                        원자료 · 저장값 · 화면값 대조
+                    </h3>
+
+                </div>
+
+
+                <div class="comparison-grid">
+
+                    <div class="comparison-item">
+
+                        <p class="info-label">
+                            원자료 값
+                        </p>
+
+                        <strong id="rawValue">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div class="comparison-item">
+
+                        <p class="info-label">
+                            저장값
+                        </p>
+
+                        <strong id="savedValue">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div class="comparison-item">
+
+                        <p class="info-label">
+                            화면값
+                        </p>
+
+                        <strong id="displayValue">
+                            -
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <details class="raw-data-box">
+
+                    <summary>
+                        실제 공개 API 원자료 보기
+                    </summary>
+
+                    <pre id="rawData">
+데이터 조회 중...
+                    </pre>
+
+                </details>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================
+             카드 3
+             합성 실패 재생
+        ====================================== -->
+
+        <section class="replay-section">
+
+
+            <div class="section-header">
+
+                <div>
+
+                    <p class="eyebrow">
+                        FAILURE REPLAY
+                    </p>
+
+                    <h2>
+                        외부 데이터 실패 재생
+                    </h2>
+
+                </div>
+
+
+                <p class="section-description">
+                    아래 테스트는 실제 사용자 데이터가 아닌
+                    합성 시험 fixture를 사용합니다.
+                </p>
+
+            </div>
+
+
+            <!-- 현재 상태 -->
+
+            <div class="replay-status-card">
+
+
+                <div>
+
+                    <p class="info-label">
+                        데이터 상태
+                    </p>
+
+                    <strong id="readingStatus">
+                        fresh
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <p class="info-label">
+                        오류 코드
+                    </p>
+
+                    <strong id="errorCode">
+                        none
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <p class="info-label">
+                        일별 기록
+                    </p>
+
+                    <strong id="recordCount">
+                        0건
+                    </strong>
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- 오류 설명 -->
+
+            <div
+                class="failure-message"
+                id="failureMessage"
             >
-                FRESH
-            </span>
 
-        </div>
+                <strong>
+                    정상 상태입니다.
+                </strong>
 
+                <p>
+                    현재 데이터가 정상적으로 처리되었습니다.
+                </p>
 
-        <div
-            class="last-good-value"
-            id="lastKnownGoodValue"
-        >
-            정상 데이터를 아직 불러오지 않았습니다.
-        </div>
+            </div>
 
 
-        <p
-            class="last-good-date"
-            id="lastKnownGoodDate"
-        >
-            -
-        </p>
 
-    </div>
+            <!-- fixture 버튼 -->
 
+            <div class="fixture-area">
 
-    <!-- 다음 행동 -->
-
-    <div class="next-action-card">
-
-        <h3>
-            다음 행동
-        </h3>
-
-        <p id="nextAction">
-            정상 데이터를 조회할 수 있습니다.
-        </p>
+                <h3>
+                    합성 fixture 재생
+                </h3>
 
 
-        <button
-            id="retryButton"
-            class="retry-button"
-            disabled
-        >
-            다시 시도
-        </button>
-
-    </div>
+                <div class="fixture-controls">
 
 
-    <!-- 테스트 초기화 -->
-
-    <button
-        id="resetReplay"
-        class="reset-button"
-    >
-        합성 테스트 초기화
-    </button>
+                    <button
+                        class="fixture-btn normal-btn"
+                        data-fixture="T04-NORMAL-D1-A"
+                    >
+                        D1-A 정상
+                    </button>
 
 
-    <!-- 일별 기록 -->
+                    <button
+                        class="fixture-btn normal-btn"
+                        data-fixture="T04-NORMAL-D1-B"
+                    >
+                        D1-B 정상
+                    </button>
 
-    <div class="history-card">
 
-        <h3>
-            합성 일별 기록
-        </h3>
+                    <button
+                        class="fixture-btn normal-btn"
+                        data-fixture="T04-NORMAL-D2"
+                    >
+                        D2 정상
+                    </button>
 
 
-        <div id="dailyHistory">
+                    <button
+                        class="fixture-btn error-btn"
+                        data-fixture="T04-TIMEOUT"
+                    >
+                        느린 응답
+                    </button>
 
-            <p class="empty-history">
-                아직 합성 기록이 없습니다.
+
+                    <button
+                        class="fixture-btn error-btn"
+                        data-fixture="T04-AUTH-401"
+                    >
+                        401 거절
+                    </button>
+
+
+                    <button
+                        class="fixture-btn error-btn"
+                        data-fixture="T04-RATE-429"
+                    >
+                        호출 제한
+                    </button>
+
+
+                    <button
+                        class="fixture-btn error-btn"
+                        data-fixture="T04-OFFLINE"
+                    >
+                        오프라인
+                    </button>
+
+
+                    <button
+                        class="fixture-btn error-btn"
+                        data-fixture="T04-SCHEMA-BREAK"
+                    >
+                        형식 변경
+                    </button>
+
+
+                </div>
+
+            </div>
+
+
+
+            <!-- 마지막 정상값 -->
+
+            <div class="last-good-card">
+
+
+                <div class="last-good-header">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            LAST KNOWN GOOD
+                        </p>
+
+                        <h3>
+                            마지막 정상값
+                        </h3>
+
+                    </div>
+
+
+                    <span
+                        class="stale-badge"
+                        id="staleBadge"
+                    >
+                        FRESH
+                    </span>
+
+                </div>
+
+
+                <div
+                    class="last-good-value"
+                    id="lastKnownGoodValue"
+                >
+                    정상 데이터를 아직 불러오지 않았습니다.
+                </div>
+
+
+                <p
+                    class="last-good-date"
+                    id="lastKnownGoodDate"
+                >
+                    -
+                </p>
+
+
+            </div>
+
+
+
+            <!-- 다음 행동 -->
+
+            <div class="next-action-card">
+
+
+                <h3>
+                    다음 행동
+                </h3>
+
+
+                <p id="nextAction">
+                    정상 데이터를 조회할 수 있습니다.
+                </p>
+
+
+                <button
+                    id="retryButton"
+                    class="retry-button"
+                    disabled
+                >
+                    다시 시도
+                </button>
+
+
+            </div>
+
+
+
+            <!-- 초기화 -->
+
+            <button
+                id="resetReplay"
+                class="reset-button"
+            >
+                합성 테스트 초기화
+            </button>
+
+
+
+            <!-- 일별 기록 -->
+
+            <div class="history-card">
+
+
+                <h3>
+                    합성 일별 기록
+                </h3>
+
+
+                <p class="history-description">
+                    같은 날짜의 정상 데이터는 기존 기록을 갱신하고,
+                    다른 날짜의 정상 데이터는 새 기록으로 추가됩니다.
+                </p>
+
+
+                <div id="dailyHistory">
+
+                    <p class="empty-history">
+                        아직 합성 기록이 없습니다.
+                    </p>
+
+                </div>
+
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- =====================================
+             안내
+        ====================================== -->
+
+        <section class="privacy-card">
+
+            <h2>
+                데이터 및 개인정보 안내
+            </h2>
+
+            <p>
+                실제 데이터는 비개인 공개 원천에서 조회하며,
+                API Key·비밀번호·개인정보를 사용하지 않습니다.
+                실패 재생에는 실제 데이터가 아닌 합성 시험값만 사용합니다.
             </p>
 
-        </div>
+        </section>
 
-    </div>
 
-</section>
+        <footer>
+
+            <p>
+                오늘의 진짜 정보판 · 실제 공개 데이터 + 합성 실패 재생
+            </p>
+
+        </footer>
+
+
+    </main>
+
+
+    <script src="app.js"></script>
+
+</body>
+</html>
