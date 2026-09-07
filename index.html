@@ -76,8 +76,6 @@
             </div>
 
 
-            <!-- 실제 값 -->
-
             <div class="main-value-card">
 
                 <p class="info-label">
@@ -102,8 +100,6 @@
 
             </div>
 
-
-            <!-- 정보 -->
 
             <div class="info-grid">
 
@@ -173,8 +169,6 @@
 
             </div>
 
-
-            <!-- 원자료 / 저장값 / 화면값 -->
 
             <div class="comparison-card">
 
@@ -259,7 +253,6 @@
 
         <section class="replay-section">
 
-
             <div class="section-header">
 
                 <div>
@@ -283,10 +276,7 @@
             </div>
 
 
-            <!-- 현재 상태 -->
-
             <div class="replay-status-card">
-
 
                 <div>
 
@@ -326,12 +316,8 @@
 
                 </div>
 
-
             </div>
 
-
-
-            <!-- 오류 설명 -->
 
             <div
                 class="failure-message"
@@ -349,9 +335,6 @@
             </div>
 
 
-
-            <!-- fixture 버튼 -->
-
             <div class="fixture-area">
 
                 <h3>
@@ -360,7 +343,6 @@
 
 
                 <div class="fixture-controls">
-
 
                     <button
                         class="fixture-btn normal-btn"
@@ -425,17 +407,12 @@
                         형식 변경
                     </button>
 
-
                 </div>
 
             </div>
 
 
-
-            <!-- 마지막 정상값 -->
-
             <div class="last-good-card">
-
 
                 <div class="last-good-header">
 
@@ -477,15 +454,10 @@
                     -
                 </p>
 
-
             </div>
 
 
-
-            <!-- 다음 행동 -->
-
             <div class="next-action-card">
-
 
                 <h3>
                     다음 행동
@@ -505,12 +477,8 @@
                     다시 시도
                 </button>
 
-
             </div>
 
-
-
-            <!-- 초기화 -->
 
             <button
                 id="resetReplay"
@@ -520,11 +488,7 @@
             </button>
 
 
-
-            <!-- 일별 기록 -->
-
             <div class="history-card">
-
 
                 <h3>
                     합성 일별 기록
@@ -545,16 +509,333 @@
 
                 </div>
 
-
             </div>
-
 
         </section>
 
 
 
         <!-- =====================================
-             안내
+             카드 5
+             실제 이틀과 어제 대비
+        ====================================== -->
+
+        <section class="daily-section">
+
+            <div class="section-header">
+
+                <div>
+
+                    <p class="eyebrow">
+                        REAL DAILY HISTORY
+                    </p>
+
+                    <h2>
+                        실제 이틀과 어제 대비
+                    </h2>
+
+                </div>
+
+
+                <p class="section-description">
+                    서로 다른 KST 날짜의 실제 공개 원천 값을
+                    저장하고 어제 대비 변화를 다시 계산합니다.
+                </p>
+
+            </div>
+
+
+            <!-- 카드 5 현재 상태 -->
+
+            <div class="replay-status-card">
+
+                <div>
+
+                    <p class="info-label">
+                        실제 일별 기록
+                    </p>
+
+                    <strong id="realRecordCount">
+                        0건
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <p class="info-label">
+                        기준 시간대
+                    </p>
+
+                    <strong>
+                        Asia/Seoul
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <p class="info-label">
+                        데이터 원천
+                    </p>
+
+                    <strong>
+                        Frankfurter
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- 오늘의 실제 조회 -->
+
+            <div class="comparison-card">
+
+                <div class="comparison-header">
+
+                    <p class="eyebrow">
+                        REAL SOURCE
+                    </p>
+
+                    <h3>
+                        실제 공개 원천 조회 결과
+                    </h3>
+
+                </div>
+
+
+                <div class="comparison-grid">
+
+                    <div class="comparison-item">
+
+                        <p class="info-label">
+                            원천 URL
+                        </p>
+
+                        <strong id="realSourceUrl">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div class="comparison-item">
+
+                        <p class="info-label">
+                            원천 관측 시각
+                        </p>
+
+                        <strong id="realObservationTime">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div class="comparison-item">
+
+                        <p class="info-label">
+                            정규화 값
+                        </p>
+
+                        <strong id="realNormalizedValue">
+                            -
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="comparison-grid">
+
+                    <div class="comparison-item">
+
+                        <p class="info-label">
+                            단위
+                        </p>
+
+                        <strong id="realUnit">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div class="comparison-item">
+
+                        <p class="info-label">
+                            저장값
+                        </p>
+
+                        <strong id="realSavedValue">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div class="comparison-item">
+
+                        <p class="info-label">
+                            화면값
+                        </p>
+
+                        <strong id="realDisplayValue">
+                            -
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- 어제 대비 -->
+
+            <div class="comparison-card">
+
+                <div class="comparison-header">
+
+                    <p class="eyebrow">
+                        DAY OVER DAY
+                    </p>
+
+                    <h3>
+                        어제 대비 변화
+                    </h3>
+
+                </div>
+
+
+                <div class="comparison-grid">
+
+                    <div class="comparison-item">
+
+                        <p class="info-label">
+                            이전 날짜 값
+                        </p>
+
+                        <strong id="previousDayValue">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div class="comparison-item">
+
+                        <p class="info-label">
+                            현재 날짜 값
+                        </p>
+
+                        <strong id="currentDayValue">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div class="comparison-item">
+
+                        <p class="info-label">
+                            어제 대비 변화
+                        </p>
+
+                        <strong id="dayOverDayValue">
+                            -
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <p
+                    class="history-description"
+                    id="dayOverDayExplanation"
+                >
+                    서로 다른 두 날짜의 실제 기록이 쌓이면
+                    어제 대비 변화가 계산됩니다.
+                </p>
+
+            </div>
+
+
+            <!-- 실제 일별 기록 -->
+
+            <div class="history-card">
+
+                <h3>
+                    실제 일별 기록
+                </h3>
+
+
+                <p class="history-description">
+                    실제 공개 원천에서 조회한 값만 날짜별로 보존합니다.
+                    같은 KST 날짜의 재조회는 기존 기록을 갱신합니다.
+                </p>
+
+
+                <div id="realDailyHistory">
+
+                    <p class="empty-history">
+                        아직 실제 일별 기록이 없습니다.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- 카드 5 확인 방법 -->
+
+            <div class="next-action-card">
+
+                <h3>
+                    카드 5 확인 방법
+                </h3>
+
+
+                <ol>
+
+                    <li>
+                        <strong>어디로 가나요?</strong>
+                        이 페이지의 실제 공개 환율 조회 영역을 확인합니다.
+                    </li>
+
+                    <li>
+                        <strong>무엇을 하나요?</strong>
+                        서로 다른 KST 날짜에 같은 공개 원천을 다시 조회합니다.
+                    </li>
+
+                    <li>
+                        <strong>무엇이 보이면 통과인가요?</strong>
+                        실제 날짜 기록이 2건이고,
+                        각 기록의 원천·시각·값·단위와 저장값·화면값이 일치하며,
+                        어제 대비 계산값도 일치하면 통과입니다.
+                    </li>
+
+                    <li>
+                        <strong>안 될 때 무엇이 보이나요?</strong>
+                        실제 기록이 2건이 되지 않거나,
+                        원천값·저장값·화면값이 서로 다르면 해당 항목을 다시 확인합니다.
+                    </li>
+
+                </ol>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================
+             데이터 및 개인정보 안내
         ====================================== -->
 
         <section class="privacy-card">
@@ -584,7 +865,8 @@
     </main>
 
 
-   <script src="app.js?v=20260907"></script>
+    <script src="app.js?v=20260907"></script>
 
 </body>
 </html>
+
