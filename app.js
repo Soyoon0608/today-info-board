@@ -1,212 +1,158 @@
-// =========================================
-// 오늘의 진짜 정보판
-//
-// 카드 1
-// 실제 공개 데이터 조회
-//
-// 카드 2
-// API Key 없는 공개 API 사용
-//
-// 카드 3
-// 합성 fixture를 이용한 실패 재생
-// =========================================
+
+/* =========================================================
+   오늘의 진짜 정보판
+   실제 공개 환율 + 실패 재생 + 실제 일별 기록
+========================================================= */
 
 
-// =========================================
-// 실제 공개 API
-//
-// API Key 없음
-// 비밀번호 없음
-// 개인 토큰 없음
-// =========================================
+/* =========================================================
+   기본 설정
+========================================================= */
 
-const API_URL =
-    "https://api.frankfurter.dev/v2/rate/USD/KRW";
+const API_URL = "https://api.frankfurter.dev/v2/rate/USD/KRW";
 
+const TIMEZONE = "Asia/Seoul";
 
-// =========================================
-// 실제 데이터 DOM
-// =========================================
+const SYNTHETIC_STORAGE_KEY = "t04SyntheticReplayState";
 
-const exchangeValue =
-    document.getElementById("exchangeValue");
-
-const source =
-    document.getElementById("source");
-
-const sourceTime =
-    document.getElementById("sourceTime");
-
-const fetchedAt =
-    document.getElementById("fetchedAt");
-
-const savedValue =
-    document.getElementById("savedValue");
-
-const displayValue =
-    document.getElementById("displayValue");
-
-const rawValue =
-    document.getElementById("rawValue");
-
-const rawData =
-    document.getElementById("rawData");
-
-const liveStatus =
-    document.getElementById("liveStatus");
+const REAL_DAILY_STORAGE_KEY = "t05ActualDailyRecords";
 
 
+/* =========================================================
+   공통 DOM
+========================================================= */
 
-// =========================================
-// 카드 3 DOM
-// =========================================
-
-const readingStatus =
-    document.getElementById("readingStatus");
-
-const errorCode =
-    document.getElementById("errorCode");
-
-const recordCount =
-    document.getElementById("recordCount");
-
-const failureMessage =
-    document.getElementById("failureMessage");
-
-const staleBadge =
-    document.getElementById("staleBadge");
-
-const lastKnownGoodValue =
-    document.getElementById(
-        "lastKnownGoodValue"
-    );
-
-const lastKnownGoodDate =
-    document.getElementById(
-        "lastKnownGoodDate"
-    );
-
-const nextAction =
-    document.getElementById("nextAction");
-
-const retryButton =
-    document.getElementById("retryButton");
-
-const resetReplay =
-    document.getElementById("resetReplay");
-
-const dailyHistory =
-    document.getElementById("dailyHistory");
+const $ = (id) => document.getElementById(id);
 
 
+/* =========================================================
+   날짜 / 시간 처리
+========================================================= */
 
-// =========================================
-// 실제 데이터 날짜
-// KST 표시
-// =========================================
+/*
+   현재 시간을 KST 기준 YYYY-MM-DD로 변환
+*/
+function getKSTDateKey(date = new Date()) {
 
+    const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: TIMEZONE,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).formatToParts(date);
+
+    const year = parts.find(
+        part => part.type === "year"
+    ).value;
+
+    const month = parts.find(
+        part => part.type === "month"
+    ).value;
+
+    const day = parts.find(
+        part => part.type === "day"
+    ).value;
+
+    return `${year}-${month}-${day}`;
+}
+
+
+/*
+   KST 표시용 날짜/시간
+*/
 function formatKST(date) {
 
-    return new Intl.DateTimeFormat(
-        "ko-KR",
-        {
-            timeZone:
-                "Asia/Seoul",
-
-            year:
-                "numeric",
-
-            month:
-                "2-digit",
-
-            day:
-                "2-digit",
-
-            hour:
-                "2-digit",
-
-            minute:
-                "2-digit",
-
-            second:
-                "2-digit",
-
-            hour12:
-                false
-        }
-    ).format(date);
+    return new Intl.DateTimeFormat("ko-KR", {
+        timeZone: TIMEZONE,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+    }).format(new Date(date));
 
 }
 
 
+/*
+   숫자 표시
+*/
+function formatNumber(value) {
 
-// =========================================
-// 실제 환율 조회
-// =========================================
+    const number = Number(value);
+
+    if (!Number.isFinite(number)) {
+        return "-";
+    }
+
+    return number.toLocaleString("ko-KR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+
+}
+
+
+/* =========================================================
+   카드 1
+   실제 공개 환율
+========================================================= */
 
 async function loadExchangeRate() {
 
+    const exchangeValue = $("exchangeValue");
+    const source = $("source");
+    const sourceTime = $("sourceTime");
+    const fetchedAt = $("fetchedAt");
+    const rawValue = $("rawValue");
+    const savedValue = $("savedValue");
+    const displayValue = $("displayValue");
+    const rawData = $("rawData");
+    const liveStatus = $("liveStatus");
+
     try {
 
-        liveStatus.textContent =
-            "실제 데이터 조회 중";
+        liveStatus.textContent = "실제 데이터 조회 중";
 
-
-        liveStatus.classList.remove(
-            "stale"
-        );
-
-
-        const response =
-            await fetch(API_URL);
-
+        const response = await fetch(API_URL, {
+            cache: "no-store"
+        });
 
         if (!response.ok) {
-
             throw new Error(
-                `HTTP 오류: ${response.status}`
+                `HTTP ${response.status}`
             );
-
         }
 
 
-        const data =
-            await response.json();
+        const data = await response.json();
 
 
-        // v2 응답 형식 확인
-        if (
-            !data ||
-            typeof data.rate !== "number"
-        ) {
+        /*
+           API 응답에서 환율 확인
+        */
+        const rate = Number(data.rate);
 
+        if (!Number.isFinite(rate)) {
             throw new Error(
-                "예상한 데이터 형식이 아닙니다."
+                "환율 데이터 형식이 올바르지 않습니다."
             );
-
         }
 
 
-        const rate =
-            data.rate;
+        const now = new Date();
+
+        const formattedRate = formatNumber(rate);
 
 
-        const now =
-            new Date();
-
-
-        const formattedRate =
-            rate.toLocaleString(
-                "ko-KR",
-                {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }
-            );
-
-
-        // 정상 데이터 저장
+        /*
+           실제 정상 데이터
+        */
         const normalRecord = {
+
+            recordDate: getKSTDateKey(now),
 
             value: rate,
 
@@ -219,14 +165,17 @@ async function loadExchangeRate() {
             source:
                 "Frankfurter 공개 환율 API",
 
+            sourceUrl:
+                API_URL,
+
             sourceTime:
-                data.date,
+                data.date || "-",
 
             fetchedAt:
                 now.toISOString(),
 
             timezone:
-                "Asia/Seoul (KST)",
+                TIMEZONE,
 
             rawData:
                 data
@@ -234,70 +183,77 @@ async function loadExchangeRate() {
         };
 
 
+        /*
+           기존 마지막 정상값 저장
+        */
         localStorage.setItem(
             "lastKnownGood",
-            JSON.stringify(
-                normalRecord
-            )
+            JSON.stringify(normalRecord)
         );
 
 
-        // 화면 표시
-
+        /*
+           카드 1 화면
+        */
         exchangeValue.textContent =
             formattedRate;
-
-
-        rawValue.textContent =
-            `${formattedRate} KRW`;
-
-
-        savedValue.textContent =
-            normalRecord.formattedValue;
-
-
-        displayValue.textContent =
-            normalRecord.formattedValue;
-
 
         source.textContent =
             normalRecord.source;
 
-
         sourceTime.textContent =
-            `${data.date} (출처 기준 날짜)`;
-
+            normalRecord.sourceTime;
 
         fetchedAt.textContent =
-            `${formatKST(now)} KST`;
+            formatKST(normalRecord.fetchedAt);
 
+        rawValue.textContent =
+            formattedRate;
+
+        savedValue.textContent =
+            formattedRate;
+
+        displayValue.textContent =
+            formattedRate;
 
         rawData.textContent =
-            JSON.stringify(
-                data,
-                null,
-                2
-            );
-
+            JSON.stringify(data, null, 2);
 
         liveStatus.textContent =
             "실제 데이터 정상";
 
 
-        console.log(
-            "실제 공개 데이터 조회 성공:",
-            data
+        /*
+           카드 5
+           실제 일별 기록 저장
+        */
+        saveRealDailyRecord(
+            normalRecord
         );
 
 
-    } catch (error) {
+        /*
+           카드 5 화면 갱신
+        */
+        renderRealDailyHistory();
+
+    }
+
+    catch (error) {
 
         console.error(
-            "실제 데이터 조회 실패:",
+            "환율 조회 실패:",
             error
         );
 
 
+        liveStatus.textContent =
+            "실제 데이터 조회 실패";
+
+
+        /*
+           마지막 정상값 사용
+        */
         loadLastKnownGood();
 
     }
@@ -305,13 +261,23 @@ async function loadExchangeRate() {
 }
 
 
-
-// =========================================
-// 실제 데이터 실패 시
-// 마지막 정상값 표시
-// =========================================
+/* =========================================================
+   카드 1
+   마지막 정상값
+========================================================= */
 
 function loadLastKnownGood() {
+
+    const exchangeValue = $("exchangeValue");
+    const source = $("source");
+    const sourceTime = $("sourceTime");
+    const fetchedAt = $("fetchedAt");
+    const savedValue = $("savedValue");
+    const displayValue = $("displayValue");
+    const rawValue = $("rawValue");
+    const rawData = $("rawData");
+    const liveStatus = $("liveStatus");
+
 
     const saved =
         localStorage.getItem(
@@ -319,133 +285,103 @@ function loadLastKnownGood() {
         );
 
 
-    liveStatus.textContent =
-        "현재 조회 실패 · 마지막 정상값";
-
-
-    liveStatus.classList.add(
-        "stale"
-    );
-
-
     if (!saved) {
 
         exchangeValue.textContent =
-            "-";
-
-
-        rawValue.textContent =
-            "-";
-
-
-        savedValue.textContent =
-            "저장된 정상값 없음";
-
-
-        displayValue.textContent =
-            "-";
-
+            "데이터 없음";
 
         source.textContent =
-            "현재 조회 실패";
-
+            "정상 데이터 없음";
 
         sourceTime.textContent =
             "-";
 
-
         fetchedAt.textContent =
-            `${formatKST(
-                new Date()
-            )} KST`;
+            "-";
 
+        rawValue.textContent =
+            "-";
+
+        savedValue.textContent =
+            "-";
+
+        displayValue.textContent =
+            "-";
 
         rawData.textContent =
-            "현재 데이터를 가져오지 못했고 저장된 정상값도 없습니다.";
-
+            "마지막 정상값이 없습니다.";
 
         return;
-
     }
 
 
-    const data =
-        JSON.parse(saved);
+    try {
+
+        const record =
+            JSON.parse(saved);
 
 
-    const formattedRate =
-        data.value.toLocaleString(
-            "ko-KR",
-            {
-                minimumFractionDigits:
-                    2,
+        const formatted =
+            formatNumber(record.value);
 
-                maximumFractionDigits:
-                    2
-            }
+
+        exchangeValue.textContent =
+            formatted;
+
+        source.textContent =
+            record.source || "-";
+
+        sourceTime.textContent =
+            record.sourceTime || "-";
+
+        fetchedAt.textContent =
+            record.fetchedAt
+                ? formatKST(record.fetchedAt)
+                : "-";
+
+        rawValue.textContent =
+            formatted;
+
+        savedValue.textContent =
+            formatted;
+
+        displayValue.textContent =
+            formatted;
+
+        rawData.textContent =
+            JSON.stringify(
+                record.rawData || record,
+                null,
+                2
+            );
+
+        liveStatus.textContent =
+            "마지막 정상값 표시";
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "마지막 정상값 처리 실패:",
+            error
         );
 
-
-    exchangeValue.textContent =
-        formattedRate;
-
-
-    rawValue.textContent =
-        `${formattedRate} KRW`;
-
-
-    savedValue.textContent =
-        data.formattedValue;
-
-
-    displayValue.textContent =
-        data.formattedValue;
-
-
-    source.textContent =
-        data.source;
-
-
-    sourceTime.textContent =
-        data.sourceTime;
-
-
-    fetchedAt.textContent =
-        `${formatKST(
-            new Date(
-                data.fetchedAt
-            )
-        )} KST`;
-
-
-    rawData.textContent =
-        JSON.stringify(
-            data.rawData,
-            null,
-            2
-        );
+    }
 
 }
 
 
-
-// =========================================
-// 카드 3
-// 합성 fixture
-//
-// 실제 데이터와 분리된 시험 데이터
-// =========================================
+/* =========================================================
+   카드 4
+   합성 테스트 fixture
+========================================================= */
 
 const fixtures = {
 
-    // -------------------------------------
-    // 같은 실제 날짜의 첫 번째 정상값
-    // -------------------------------------
-
     "T04-NORMAL-D1-A": {
 
-        type:
-            "success",
+        type: "success",
 
         recordDate:
             "2026-08-24",
@@ -459,15 +395,9 @@ const fixtures = {
     },
 
 
-    // -------------------------------------
-    // 같은 날짜의 두 번째 정상값
-    // 기존 행 갱신
-    // -------------------------------------
-
     "T04-NORMAL-D1-B": {
 
-        type:
-            "success",
+        type: "success",
 
         recordDate:
             "2026-08-24",
@@ -481,14 +411,9 @@ const fixtures = {
     },
 
 
-    // -------------------------------------
-    // 다음 날짜 정상값
-    // -------------------------------------
-
     "T04-NORMAL-D2": {
 
-        type:
-            "success",
+        type: "success",
 
         recordDate:
             "2026-08-25",
@@ -502,119 +427,74 @@ const fixtures = {
     },
 
 
-    // -------------------------------------
-    // 느린 외부 응답
-    // -------------------------------------
-
     "T04-TIMEOUT": {
 
-        type:
-            "error",
+        type: "error",
 
         errorCode:
-            "timeout",
+            "TIMEOUT",
 
-        title:
-            "외부 응답이 너무 오래 걸리고 있습니다.",
-
-        action:
-            "잠시 기다린 후 다시 시도하세요."
+        message:
+            "외부 데이터 응답이 제한 시간 안에 도착하지 않았습니다."
 
     },
 
-
-    // -------------------------------------
-    // 외부 원천 401
-    // -------------------------------------
 
     "T04-AUTH-401": {
 
-        type:
-            "error",
+        type: "error",
 
         errorCode:
-            "auth_401",
+            "AUTH_401",
 
-        title:
-            "외부 데이터 원천이 요청을 거절했습니다.",
-
-        action:
-            "외부 원천의 접근 상태를 확인한 후 다시 시도하세요."
+        message:
+            "외부 데이터 인증에 실패했습니다."
 
     },
 
-
-    // -------------------------------------
-    // 호출 제한
-    // -------------------------------------
 
     "T04-RATE-429": {
 
-        type:
-            "error",
+        type: "error",
 
         errorCode:
-            "rate_429",
+            "RATE_429",
 
-        title:
-            "외부 원천의 호출 제한에 도달했습니다.",
-
-        action:
-            "호출 제한이 해제될 때까지 기다린 후 다시 시도하세요."
+        message:
+            "외부 데이터 호출 제한에 도달했습니다."
 
     },
 
-
-    // -------------------------------------
-    // 오프라인
-    // -------------------------------------
 
     "T04-OFFLINE": {
 
-        type:
-            "error",
+        type: "error",
 
         errorCode:
-            "offline",
+            "OFFLINE",
 
-        title:
-            "현재 네트워크 연결을 사용할 수 없습니다.",
-
-        action:
-            "인터넷 연결을 확인한 후 다시 시도하세요."
+        message:
+            "네트워크 연결이 없어 외부 데이터를 가져오지 못했습니다."
 
     },
 
-
-    // -------------------------------------
-    // 응답 형식 변경
-    // -------------------------------------
 
     "T04-SCHEMA-BREAK": {
 
-        type:
-            "error",
+        type: "error",
 
         errorCode:
-            "schema_break",
+            "SCHEMA_BREAK",
 
-        title:
-            "외부 데이터의 응답 형식이 예상과 다릅니다.",
-
-        action:
-            "외부 데이터 형식이 정상으로 복구된 후 다시 시도하세요."
+        message:
+            "외부 데이터 형식이 예상과 다릅니다."
 
     },
 
 
-    // -------------------------------------
-    // 복구 fixture
-    // -------------------------------------
-
     "T04-RECOVER-D2": {
 
-        type:
-            "success",
+        type: "success",
 
         recordDate:
             "2026-08-25",
@@ -630,108 +510,101 @@ const fixtures = {
 };
 
 
-
-// =========================================
-// 합성 상태 불러오기
-// =========================================
+/* =========================================================
+   카드 4
+   상태 불러오기
+========================================================= */
 
 function getReplayState() {
 
     const saved =
         localStorage.getItem(
-            "t04SyntheticReplayState"
+            SYNTHETIC_STORAGE_KEY
         );
 
 
-    if (saved) {
+    if (!saved) {
 
-        try {
+        return {
 
-            return JSON.parse(
-                saved
-            );
+            status:
+                "fresh",
 
-        } catch (error) {
+            errorCode:
+                "none",
 
-            console.error(
-                "합성 상태 복원 실패:",
-                error
-            );
+            records:
+                [],
 
-        }
+            lastKnownGood:
+                null,
+
+            pendingRecovery:
+                false
+
+        };
 
     }
 
 
-    return {
+    try {
 
-        status:
-            "fresh",
+        return JSON.parse(saved);
 
-        errorCode:
-            "none",
+    }
 
-        records:
-            [],
+    catch {
 
-        lastKnownGood:
-            null,
+        return {
 
-        pendingRecovery:
-            false
+            status:
+                "fresh",
 
-    };
+            errorCode:
+                "none",
+
+            records:
+                [],
+
+            lastKnownGood:
+                null,
+
+            pendingRecovery:
+                false
+
+        };
+
+    }
 
 }
 
 
-
-// =========================================
-// 합성 상태 저장
-// =========================================
+/* =========================================================
+   카드 4
+   상태 저장
+========================================================= */
 
 function saveReplayState(state) {
 
     localStorage.setItem(
-        "t04SyntheticReplayState",
-
-        JSON.stringify(
-            state
-        )
+        SYNTHETIC_STORAGE_KEY,
+        JSON.stringify(state)
     );
 
 }
 
 
-
-// =========================================
-// 일별 기록 저장
-//
-// 같은 날짜:
-// 새 행 추가 X
-// 기존 값 갱신
-//
-// 다른 날짜:
-// 정확히 한 건 추가
-// =========================================
+/* =========================================================
+   카드 4
+   일별 기록 저장
+========================================================= */
 
 function saveDailyRecord(
     state,
     fixture
 ) {
 
-    const existingIndex =
-        state.records.findIndex(
-
-            record =>
-
-                record.recordDate ===
-                fixture.recordDate
-
-        );
-
-
-    const newRecord = {
+    const record = {
 
         recordDate:
             fixture.recordDate,
@@ -745,67 +618,65 @@ function saveDailyRecord(
     };
 
 
-    // 같은 날짜
+    const existingIndex =
+        state.records.findIndex(
+            item =>
+                item.recordDate ===
+                fixture.recordDate
+        );
 
-    if (
-        existingIndex !== -1
-    ) {
 
-        state.records[
-            existingIndex
-        ] = newRecord;
+    if (existingIndex >= 0) {
+
+        state.records[existingIndex] =
+            record;
 
     }
-
-    // 다른 날짜
 
     else {
 
         state.records.push(
-            newRecord
+            record
         );
 
     }
 
 
-    // 마지막 정상값 갱신
+    state.records.sort(
+        (a, b) =>
+            a.recordDate.localeCompare(
+                b.recordDate
+            )
+    );
+
 
     state.lastKnownGood =
-        newRecord;
+        record;
 
 }
 
 
-
-// =========================================
-// fixture 재생
-// =========================================
+/* =========================================================
+   카드 4
+   fixture 재생
+========================================================= */
 
 function replayFixture(
-    fixtureName
+    fixtureId
 ) {
 
     const fixture =
-        fixtures[
-            fixtureName
-        ];
+        fixtures[fixtureId];
 
 
     if (!fixture) {
-
         return;
-
     }
 
 
     const state =
         getReplayState();
 
-
-
-    // =====================================
-    // 정상
-    // =====================================
 
     if (
         fixture.type ===
@@ -821,51 +692,26 @@ function replayFixture(
         state.status =
             "fresh";
 
-
         state.errorCode =
             "none";
-
 
         state.pendingRecovery =
             false;
 
-
-        saveReplayState(
-            state
-        );
-
-
-        renderReplayState(
-            state
-        );
-
-
-        return;
-
     }
 
+    else {
 
+        state.status =
+            "stale";
 
-    // =====================================
-    // 실패
-    // =====================================
+        state.errorCode =
+            fixture.errorCode;
 
-    state.status =
-        "stale";
+        state.pendingRecovery =
+            true;
 
-
-    state.errorCode =
-        fixture.errorCode;
-
-
-    // 실패 시
-    // 마지막 정상값 삭제 금지
-
-    // 실패 시
-    // 기존 일별 기록 삭제 금지
-
-    state.pendingRecovery =
-        true;
+    }
 
 
     saveReplayState(
@@ -874,295 +720,792 @@ function replayFixture(
 
 
     renderReplayState(
-        state,
-        fixture
+        state
     );
 
 }
 
 
-
-// =========================================
-// 합성 상태 화면 표시
-// =========================================
+/* =========================================================
+   카드 4
+   화면 표시
+========================================================= */
 
 function renderReplayState(
-    state,
-    currentFixture = null
+    state
 ) {
 
-    // -------------------------------------
-    // 상태
-    // -------------------------------------
+    if ($("readingStatus")) {
 
-    readingStatus.textContent =
-        state.status;
+        $("readingStatus").textContent =
+            state.status;
 
-
-    errorCode.textContent =
-        state.errorCode;
+    }
 
 
-    recordCount.textContent =
-        `${state.records.length}건`;
+    if ($("errorCode")) {
+
+        $("errorCode").textContent =
+            state.errorCode;
+
+    }
 
 
+    if ($("recordCount")) {
 
-    // -------------------------------------
-    // 마지막 정상값
-    // -------------------------------------
+        $("recordCount").textContent =
+            `${state.records.length}건`;
+
+    }
+
+
+    const failureMessage =
+        $("failureMessage");
+
+
+    if (failureMessage) {
+
+        if (
+            state.status ===
+            "stale"
+        ) {
+
+            failureMessage.innerHTML = `
+
+                <strong>
+                    외부 데이터 조회에 실패했습니다.
+                </strong>
+
+                <p>
+                    오류 코드:
+                    ${escapeHtml(state.errorCode)}
+                    <br>
+                    마지막 정상값을 유지합니다.
+                </p>
+
+            `;
+
+        }
+
+        else {
+
+            failureMessage.innerHTML = `
+
+                <strong>
+                    정상 상태입니다.
+                </strong>
+
+                <p>
+                    현재 데이터가 정상적으로 처리되었습니다.
+                </p>
+
+            `;
+
+        }
+
+    }
+
+
+    const staleBadge =
+        $("staleBadge");
+
+
+    if (staleBadge) {
+
+        staleBadge.textContent =
+            state.status === "stale"
+                ? "STALE"
+                : "FRESH";
+
+    }
+
+
+    const lastGoodValue =
+        $("lastKnownGoodValue");
+
+    const lastGoodDate =
+        $("lastKnownGoodDate");
+
 
     if (
-        state.lastKnownGood
+        state.lastKnownGood &&
+        lastGoodValue &&
+        lastGoodDate
     ) {
 
-        lastKnownGoodValue.textContent =
-            `${state.lastKnownGood.value} ${state.lastKnownGood.unit}`;
+        lastGoodValue.textContent =
+            `${formatNumber(state.lastKnownGood.value)}
+             ${state.lastKnownGood.unit}`;
 
-
-        lastKnownGoodDate.textContent =
+        lastGoodDate.textContent =
             state.lastKnownGood.recordDate;
 
     }
 
-    else {
 
-        lastKnownGoodValue.textContent =
-            "정상 데이터를 아직 불러오지 않았습니다.";
-
-
-        lastKnownGoodDate.textContent =
-            "-";
-
-    }
+    const nextAction =
+        $("nextAction");
 
 
-
-    // -------------------------------------
-    // STALE 상태
-    // -------------------------------------
-
-    if (
-        state.status ===
-        "stale"
-    ) {
-
-        staleBadge.textContent =
-            "STALE · 오래된 정상값";
+    const retryButton =
+        $("retryButton");
 
 
-        staleBadge.classList.add(
-            "stale"
-        );
+    if (state.pendingRecovery) {
 
-
-        failureMessage.classList.add(
-            "error"
-        );
-
-
-        if (
-            currentFixture
-        ) {
-
-            failureMessage.innerHTML =
-                `
-                <strong>
-                    ${currentFixture.title}
-                </strong>
-
-                <p>
-                    마지막 정상값은 삭제하지 않고 유지합니다.
-                    현재 화면의 데이터 상태는 오래된 값(STALE)입니다.
-                </p>
-                `;
-
+        if (nextAction) {
 
             nextAction.textContent =
-                currentFixture.action;
+                "외부 데이터가 다시 정상인지 확인한 후 재시도하세요.";
 
         }
 
 
-        retryButton.disabled =
-            false;
+        if (retryButton) {
+
+            retryButton.disabled =
+                false;
+
+        }
 
     }
-
-
-
-    // -------------------------------------
-    // FRESH 상태
-    // -------------------------------------
 
     else {
 
-        staleBadge.textContent =
-            "FRESH";
+        if (nextAction) {
+
+            nextAction.textContent =
+                "정상 데이터를 조회할 수 있습니다.";
+
+        }
 
 
-        staleBadge.classList.remove(
-            "stale"
-        );
+        if (retryButton) {
 
+            retryButton.disabled =
+                true;
 
-        failureMessage.classList.remove(
-            "error"
-        );
-
-
-        failureMessage.innerHTML =
-            `
-            <strong>
-                정상 상태입니다.
-            </strong>
-
-            <p>
-                현재 합성 데이터가 정상적으로 처리되었습니다.
-            </p>
-            `;
-
-
-        nextAction.textContent =
-            "현재 데이터 상태가 정상입니다.";
-
-
-        retryButton.disabled =
-            true;
+        }
 
     }
 
 
+    renderSyntheticHistory(
+        state.records
+    );
 
-    // -------------------------------------
-    // 일별 기록
-    // -------------------------------------
+}
 
-    if (
-        state.records.length === 0
-    ) {
 
-        dailyHistory.innerHTML =
-            `
+/* =========================================================
+   카드 4
+   합성 기록 화면
+========================================================= */
+
+function renderSyntheticHistory(
+    records
+) {
+
+    const container =
+        $("dailyHistory");
+
+
+    if (!container) {
+        return;
+    }
+
+
+    if (!records.length) {
+
+        container.innerHTML = `
+
             <p class="empty-history">
                 아직 합성 기록이 없습니다.
             </p>
-            `;
 
+        `;
 
         return;
-
     }
 
 
-    dailyHistory.innerHTML =
-        state.records
+    container.innerHTML =
+        records
+            .slice()
+            .sort(
+                (a, b) =>
+                    a.recordDate.localeCompare(
+                        b.recordDate
+                    )
+            )
             .map(
+                record => `
 
-                record =>
+                    <div class="history-row">
 
-                    `
-                    <div class="history-item">
+                        <div class="history-date">
+                            ${escapeHtml(record.recordDate)}
+                        </div>
 
-                        <span>
-                            ${record.recordDate}
-                        </span>
+                        <div class="history-value">
+                            ${formatNumber(record.value)}
+                        </div>
 
-                        <span class="history-value">
-                            ${record.value}
-                            ${record.unit}
-                        </span>
+                        <div class="history-meta">
+                            <strong>단위</strong><br>
+                            ${escapeHtml(record.unit)}
+                        </div>
+
+                        <div class="history-meta">
+                            <strong>종류</strong><br>
+                            합성 시험값
+                        </div>
 
                     </div>
-                    `
 
+                `
             )
             .join("");
 
 }
 
 
+/* =========================================================
+   카드 5
+   실제 일별 기록 가져오기
+========================================================= */
 
-// =========================================
-// 다시 시도
-//
-// 실패 후 recover-d2 재생
-// =========================================
+function getRealDailyRecords() {
 
-retryButton.addEventListener(
-
-    "click",
-
-    () => {
-
-        const state =
-            getReplayState();
+    const saved =
+        localStorage.getItem(
+            REAL_DAILY_STORAGE_KEY
+        );
 
 
-        if (
-            !state.pendingRecovery
-        ) {
+    if (!saved) {
+        return [];
+    }
 
-            return;
 
+    try {
+
+        const records =
+            JSON.parse(saved);
+
+
+        if (!Array.isArray(records)) {
+            return [];
         }
 
 
-        replayFixture(
-            "T04-RECOVER-D2"
+        return records;
+
+    }
+
+    catch {
+
+        return [];
+
+    }
+
+}
+
+
+/* =========================================================
+   카드 5
+   실제 일별 기록 저장
+========================================================= */
+
+function saveRealDailyRecord(
+    record
+) {
+
+    const records =
+        getRealDailyRecords();
+
+
+    const existingIndex =
+        records.findIndex(
+            item =>
+                item.recordDate ===
+                record.recordDate
+        );
+
+
+    /*
+       같은 KST 날짜:
+       기존 기록 갱신
+    */
+    if (existingIndex >= 0) {
+
+        records[existingIndex] =
+            record;
+
+    }
+
+    /*
+       다른 KST 날짜:
+       새 기록 추가
+    */
+    else {
+
+        records.push(
+            record
         );
 
     }
 
-);
+
+    /*
+       날짜순 정렬
+    */
+    records.sort(
+        (a, b) =>
+            a.recordDate.localeCompare(
+                b.recordDate
+            )
+    );
 
 
+    localStorage.setItem(
+        REAL_DAILY_STORAGE_KEY,
+        JSON.stringify(records)
+    );
 
-// =========================================
-// 합성 테스트 초기화
-// =========================================
-
-resetReplay.addEventListener(
-
-    "click",
-
-    () => {
-
-        localStorage.removeItem(
-            "t04SyntheticReplayState"
-        );
+}
 
 
-        const initialState =
-            getReplayState();
+/* =========================================================
+   카드 5
+   실제 기록 화면
+========================================================= */
+
+function renderRealDailyHistory() {
+
+    const records =
+        getRealDailyRecords();
 
 
-        renderReplayState(
-            initialState
-        );
+    const count =
+        $("realRecordCount");
+
+
+    if (count) {
+
+        count.textContent =
+            `${records.length}건`;
 
     }
 
-);
+
+    renderRealLatestSource(
+        records
+    );
 
 
+    renderDayOverDay(
+        records
+    );
 
-// =========================================
-// fixture 버튼
-// =========================================
 
+    renderRealHistory(
+        records
+    );
+
+}
+
+
+/* =========================================================
+   카드 5
+   최신 실제 원천 표시
+========================================================= */
+
+function renderRealLatestSource(
+    records
+) {
+
+    const url =
+        $("realSourceUrl");
+
+    const observationTime =
+        $("realObservationTime");
+
+    const normalizedValue =
+        $("realNormalizedValue");
+
+    const unit =
+        $("realUnit");
+
+    const savedValue =
+        $("realSavedValue");
+
+    const displayValue =
+        $("realDisplayValue");
+
+
+    if (!records.length) {
+
+        if (url) {
+            url.textContent = "-";
+        }
+
+        if (observationTime) {
+            observationTime.textContent = "-";
+        }
+
+        if (normalizedValue) {
+            normalizedValue.textContent = "-";
+        }
+
+        if (unit) {
+            unit.textContent = "-";
+        }
+
+        if (savedValue) {
+            savedValue.textContent = "-";
+        }
+
+        if (displayValue) {
+            displayValue.textContent = "-";
+        }
+
+        return;
+
+    }
+
+
+    const latest =
+        records[records.length - 1];
+
+
+    if (url) {
+
+        url.textContent =
+            latest.sourceUrl || "-";
+
+    }
+
+
+    if (observationTime) {
+
+        observationTime.textContent =
+            latest.sourceTime || "-";
+
+    }
+
+
+    if (normalizedValue) {
+
+        normalizedValue.textContent =
+            formatNumber(latest.value);
+
+    }
+
+
+    if (unit) {
+
+        unit.textContent =
+            latest.unit || "-";
+
+    }
+
+
+    if (savedValue) {
+
+        savedValue.textContent =
+            formatNumber(latest.value);
+
+    }
+
+
+    if (displayValue) {
+
+        displayValue.textContent =
+            formatNumber(latest.value);
+
+    }
+
+}
+
+
+/* =========================================================
+   카드 5
+   어제 대비 계산
+========================================================= */
+
+function renderDayOverDay(
+    records
+) {
+
+    const previousDayValue =
+        $("previousDayValue");
+
+    const currentDayValue =
+        $("currentDayValue");
+
+    const dayOverDayValue =
+        $("dayOverDayValue");
+
+    const explanation =
+        $("dayOverDayExplanation");
+
+
+    /*
+       두 날짜가 아직 없을 때
+    */
+    if (records.length < 2) {
+
+        if (previousDayValue) {
+            previousDayValue.textContent =
+                "-";
+        }
+
+        if (currentDayValue) {
+            currentDayValue.textContent =
+                "-";
+        }
+
+        if (dayOverDayValue) {
+            dayOverDayValue.textContent =
+                "-";
+        }
+
+        if (explanation) {
+
+            explanation.textContent =
+                "서로 다른 두 날짜의 실제 기록이 쌓이면 어제 대비 변화가 계산됩니다.";
+
+        }
+
+        return;
+
+    }
+
+
+    const sorted =
+        records
+            .slice()
+            .sort(
+                (a, b) =>
+                    a.recordDate.localeCompare(
+                        b.recordDate
+                    )
+            );
+
+
+    const previous =
+        sorted[sorted.length - 2];
+
+    const current =
+        sorted[sorted.length - 1];
+
+
+    /*
+       같은 계산 규칙:
+       현재 값 - 이전 값
+    */
+    const change =
+        Number(current.value) -
+        Number(previous.value);
+
+
+    if (previousDayValue) {
+
+        previousDayValue.textContent =
+            `${formatNumber(previous.value)} KRW`;
+
+    }
+
+
+    if (currentDayValue) {
+
+        currentDayValue.textContent =
+            `${formatNumber(current.value)} KRW`;
+
+    }
+
+
+    if (dayOverDayValue) {
+
+        const sign =
+            change > 0
+                ? "+"
+                : "";
+
+        dayOverDayValue.textContent =
+            `${sign}${formatNumber(change)} KRW`;
+
+    }
+
+
+    if (explanation) {
+
+        const sign =
+            change > 0
+                ? "+"
+                : "";
+
+        explanation.textContent =
+            `${previous.recordDate} 값 ${formatNumber(previous.value)} → ` +
+            `${current.recordDate} 값 ${formatNumber(current.value)} · ` +
+            `계산: ${formatNumber(current.value)} - ` +
+            `${formatNumber(previous.value)} = ` +
+            `${sign}${formatNumber(change)} KRW`;
+
+    }
+
+}
+
+
+/* =========================================================
+   카드 5
+   실제 기록 목록
+========================================================= */
+
+function renderRealHistory(
+    records
+) {
+
+    const container =
+        $("realDailyHistory");
+
+
+    if (!container) {
+        return;
+    }
+
+
+    if (!records.length) {
+
+        container.innerHTML = `
+
+            <p class="empty-history">
+                아직 실제 일별 기록이 없습니다.
+            </p>
+
+        `;
+
+        return;
+
+    }
+
+
+    const sorted =
+        records
+            .slice()
+            .sort(
+                (a, b) =>
+                    a.recordDate.localeCompare(
+                        b.recordDate
+                    )
+            );
+
+
+    container.innerHTML =
+        sorted
+            .map(
+                record => `
+
+                    <div class="real-history-row">
+
+                        <div class="real-history-date">
+                            ${escapeHtml(record.recordDate)}
+                        </div>
+
+
+                        <div class="real-history-value">
+                            ${formatNumber(record.value)}
+                            KRW
+                        </div>
+
+
+                        <div class="real-history-details">
+
+                            <div>
+                                <strong>원천:</strong>
+                                ${escapeHtml(record.source || "-")}
+                            </div>
+
+                            <div>
+                                <strong>URL:</strong>
+                                ${escapeHtml(record.sourceUrl || "-")}
+                            </div>
+
+                            <div>
+                                <strong>원천 기준 날짜:</strong>
+                                ${escapeHtml(record.sourceTime || "-")}
+                            </div>
+
+                            <div>
+                                <strong>단위:</strong>
+                                ${escapeHtml(record.unit || "-")}
+                            </div>
+
+                            <div>
+                                <strong>저장값:</strong>
+                                ${formatNumber(record.value)}
+                                KRW
+                            </div>
+
+                            <div>
+                                <strong>조회 시각:</strong>
+                                ${record.fetchedAt
+                                    ? escapeHtml(
+                                        formatKST(
+                                            record.fetchedAt
+                                        )
+                                    )
+                                    : "-"}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                `
+            )
+            .join("");
+
+}
+
+
+/* =========================================================
+   HTML 안전 처리
+========================================================= */
+
+function escapeHtml(
+    value
+) {
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+}
+
+
+/* =========================================================
+   이벤트
+========================================================= */
+
+
+/*
+   합성 fixture 버튼
+*/
 document
     .querySelectorAll(
         "[data-fixture]"
     )
     .forEach(
-
         button => {
 
             button.addEventListener(
-
                 "click",
-
                 () => {
 
                     replayFixture(
@@ -1170,22 +1513,101 @@ document
                     );
 
                 }
-
             );
 
         }
-
     );
 
 
+/*
+   합성 테스트 다시 시도
+*/
+const retryButton =
+    $("retryButton");
 
-// =========================================
-// 시작
-// =========================================
 
-renderReplayState(
-    getReplayState()
+if (retryButton) {
+
+    retryButton.addEventListener(
+        "click",
+        () => {
+
+            const state =
+                getReplayState();
+
+
+            if (
+                state.pendingRecovery
+            ) {
+
+                replayFixture(
+                    "T04-RECOVER-D2"
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+/*
+   합성 테스트 초기화
+*/
+const resetReplay =
+    $("resetReplay");
+
+
+if (resetReplay) {
+
+    resetReplay.addEventListener(
+        "click",
+        () => {
+
+            localStorage.removeItem(
+                SYNTHETIC_STORAGE_KEY
+            );
+
+
+            renderReplayState(
+                getReplayState()
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   초기 실행
+========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        /*
+           카드 4
+        */
+        renderReplayState(
+            getReplayState()
+        );
+
+
+        /*
+           카드 5
+           기존 실제 기록 표시
+        */
+        renderRealDailyHistory();
+
+
+        /*
+           카드 1
+           실제 공개 API 조회
+        */
+        loadExchangeRate();
+
+    }
 );
-
-
-loadExchangeRate();
