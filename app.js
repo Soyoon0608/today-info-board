@@ -158,14 +158,10 @@ async function loadExchangeRate() {
 
 
         const response =
-            await fetch(
-                API_URL
-            );
+            await fetch(API_URL);
 
 
-        if (
-            !response.ok
-        ) {
+        if (!response.ok) {
 
             throw new Error(
                 `HTTP 오류: ${response.status}`
@@ -178,13 +174,10 @@ async function loadExchangeRate() {
             await response.json();
 
 
-        // 응답 형식 확인
-
+        // v2 응답 형식 확인
         if (
             !data ||
-            !data.rates ||
-            typeof data.rates.KRW !==
-                "number"
+            typeof data.rate !== "number"
         ) {
 
             throw new Error(
@@ -195,7 +188,7 @@ async function loadExchangeRate() {
 
 
         const rate =
-            data.rates.KRW;
+            data.rate;
 
 
         const now =
@@ -206,23 +199,16 @@ async function loadExchangeRate() {
             rate.toLocaleString(
                 "ko-KR",
                 {
-                    minimumFractionDigits:
-                        2,
-
-                    maximumFractionDigits:
-                        2
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
                 }
             );
 
 
-        // =====================================
         // 정상 데이터 저장
-        // =====================================
-
         const normalRecord = {
 
-            value:
-                rate,
+            value: rate,
 
             formattedValue:
                 `${formattedRate} KRW`,
@@ -256,9 +242,7 @@ async function loadExchangeRate() {
         );
 
 
-        // =====================================
         // 화면 표시
-        // =====================================
 
         exchangeValue.textContent =
             formattedRate;
@@ -301,7 +285,8 @@ async function loadExchangeRate() {
 
 
         console.log(
-            "실제 공개 데이터 조회 성공"
+            "실제 공개 데이터 조회 성공:",
+            data
         );
 
 
