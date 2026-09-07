@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>오늘의 진짜 정보판</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main class="container">
+
+        <!-- 헤더 -->
+        <header class="header">
+            <p class="eyebrow">
+                TODAY'S REAL DATA BOARD
+            </p>
+
+            <h1>
+                오늘의 USD/KRW 환율
+            </h1>
+
+            <p class="description">
+                실제 공개 데이터의 값을 조회하고,
+                데이터의 출처와 시간을 함께 기록합니다.
+            </p>
+        </header>
+
+
+        <!-- 현재 상태 -->
+        <section class="status-card">
+
+            <div class="status-left">
+                <span class="status-dot"></span>
+
+                <div>
+                    <p class="status-label">
+                        데이터 상태
+                    </p>
+
+                    <strong>
+                        정상적으로 조회되었습니다
+                    </strong>
+                </div>
+            </div>
+
+            <span class="status-time">
+                마지막 확인: 2026-09-07 16:52 KST
+            </span>
+
+        </section>
+
+
+        <!-- 실제 값 -->
+        <section class="main-value-card">
+
+            <p class="section-label">
+                TODAY'S VALUE
+            </p>
+
+            <div class="value-row">
+
+                <div>
+                    <p class="currency-label">
+                        USD → KRW
+                    </p>
+
+                    <div class="value">
+                        <span id="exchangeValue">
+                            1,385.20
+                        </span>
+
+                        <span class="unit">
+                            KRW
+                        </span>
+                    </div>
+
+                    <p class="meaning">
+                        1 미국 달러를 한국 원화로 환산한 값
+                    </p>
+                </div>
+
+
+                <div class="unit-box">
+
+                    <p>
+                        단위
+                    </p>
+
+                    <strong>
+                        KRW per 1 USD
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- 데이터 정보 -->
+        <section class="info-section">
+
+            <h2>
+                데이터 정보
+            </h2>
+
+
+            <div class="info-grid">
+
+
+                <!-- 출처 -->
+                <article class="info-card">
+
+                    <span class="info-icon">
+                        ◉
+                    </span>
+
+                    <div>
+                        <p class="info-label">
+                            출처
+                        </p>
+
+                        <strong id="source">
+                            공개 환율 데이터 API
+                        </strong>
+                    </div>
+
+                </article>
+
+
+                <!-- 출처 시각 -->
+                <article class="info-card">
+
+                    <span class="info-icon">
+                        ◷
+                    </span>
+
+                    <div>
+                        <p class="info-label">
+                            출처 시각
+                        </p>
+
+                        <strong id="sourceTime">
+                            2026-09-07 16:00:00 KST
+                        </strong>
+                    </div>
+
+                </article>
+
+
+                <!-- 조회 시각 -->
+                <article class="info-card">
+
+                    <span class="info-icon">
+                        ↻
+                    </span>
+
+                    <div>
+                        <p class="info-label">
+                            조회 시각
+                        </p>
+
+                        <strong id="fetchedAt">
+                            2026-09-07 16:52:00 KST
+                        </strong>
+                    </div>
+
+                </article>
+
+
+                <!-- 기준 시간대 -->
+                <article class="info-card">
+
+                    <span class="info-icon">
+                        ◴
+                    </span>
+
+                    <div>
+                        <p class="info-label">
+                            기준 시간대
+                        </p>
+
+                        <strong>
+                            Asia/Seoul (KST)
+                        </strong>
+                    </div>
+
+                </article>
+
+
+            </div>
+
+        </section>
+
+
+        <!-- 원자료 / 저장값 / 화면값 -->
+        <section class="comparison-section">
+
+            <div class="section-title">
+                <div>
+                    <p class="eyebrow">
+                        DATA CHECK
+                    </p>
+
+                    <h2>
+                        정상 데이터 대조
+                    </h2>
+                </div>
+
+                <p>
+                    원자료 → 저장값 → 화면값이 일치하는지 확인합니다.
+                </p>
+            </div>
+
+
+            <div class="comparison-grid">
+
+
+                <!-- 원자료 -->
+                <article class="data-box raw-box">
+
+                    <div class="data-box-header">
+                        <span>
+                            01
+                        </span>
+
+                        <h3>
+                            원자료
+                        </h3>
+                    </div>
+
+
+                    <pre id="rawData">{
+  "base": "USD",
+  "target": "KRW",
+  "rate": 1385.20,
+  "sourceTime": "2026-09-07T07:00:00Z"
+}</pre>
+
+                </article>
+
+
+                <!-- 저장값 -->
+                <article class="data-box saved-box">
+
+                    <div class="data-box-header">
+                        <span>
+                            02
+                        </span>
+
+                        <h3>
+                            저장값
+                        </h3>
+                    </div>
+
+
+                    <div class="data-result">
+
+                        <p>
+                            값
+                        </p>
+
+                        <strong id="savedValue">
+                            1,385.20 KRW
+                        </strong>
+
+                    </div>
+
+                </article>
+
+
+                <!-- 화면값 -->
+                <article class="data-box display-box">
+
+                    <div class="data-box-header">
+                        <span>
+                            03
+                        </span>
+
+                        <h3>
+                            화면값
+                        </h3>
+                    </div>
+
+
+                    <div class="data-result">
+
+                        <p>
+                            현재 화면 표시값
+                        </p>
+
+                        <strong id="displayValue">
+                            1,385.20 KRW
+                        </strong>
+
+                    </div>
+
+                </article>
+
+
+            </div>
+
+
+            <div class="match-result">
+
+                <span class="check-icon">
+                    ✓
+                </span>
+
+                <div>
+                    <strong>
+                        정상 데이터 일치 확인
+                    </strong>
+
+                    <p>
+                        원자료의 환율 값과 저장값, 화면에 표시된 값이 동일합니다.
+                    </p>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- 개인정보 안내 -->
+        <section class="privacy-card">
+
+            <span class="privacy-icon">
+                🔒
+            </span>
+
+            <div>
+
+                <strong>
+                    개인정보를 저장하지 않습니다
+                </strong>
+
+                <p>
+                    이 정보판은 공개 데이터만 조회하며,
+                    이름·이메일·계정·비밀번호 등 개인정보를 수집하거나 표시하지 않습니다.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- 푸터 -->
+        <footer>
+
+            <p>
+                오늘의 진짜 정보판 · 실제 공개 데이터 기반
+            </p>
+
+        </footer>
+
+
+    </main>
+
+</body>
+</html>
