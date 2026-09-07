@@ -1,368 +1,250 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
+<!-- ========================================
+     카드 3 - 합성 실패 재생
+======================================== -->
+
+<section class="replay-section">
+
+    <div class="section-title">
+        <div>
+            <p class="eyebrow">FAILURE REPLAY</p>
+            <h2>외부 데이터 실패 재생</h2>
+        </div>
+
+        <p>
+            실제 사용자 데이터가 아닌 공개 합성 fixture 상태를 재생합니다.
+        </p>
+    </div>
+
+
+    <!-- 현재 데이터 상태 -->
+
+    <div class="replay-status-card">
+
+        <div>
+
+            <p class="info-label">
+                현재 데이터 상태
+            </p>
+
+            <strong id="readingStatus">
+                fresh
+            </strong>
+
+        </div>
+
+
+        <div>
+
+            <p class="info-label">
+                오류 코드
+            </p>
+
+            <strong id="errorCode">
+                none
+            </strong>
+
+        </div>
+
+
+        <div>
+
+            <p class="info-label">
+                저장된 일별 기록
+            </p>
+
+            <strong id="recordCount">
+                0건
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <!-- 오류 설명 -->
+
+    <div
+        class="failure-message"
+        id="failureMessage"
     >
 
-    <title>오늘의 진짜 정보판</title>
+        <strong>
+            정상 상태입니다.
+        </strong>
 
-    <link rel="stylesheet" href="style.css">
-</head>
+        <p>
+            현재 데이터가 정상적으로 처리되었습니다.
+        </p>
 
-<body>
+    </div>
 
-    <main class="container">
 
-        <!-- 헤더 -->
-        <header class="header">
-            <p class="eyebrow">
-                TODAY'S REAL DATA BOARD
-            </p>
+    <!-- 합성 fixture 버튼 -->
 
-            <h1>
-                오늘의 USD/KRW 환율
-            </h1>
+    <div class="fixture-controls">
 
-            <p class="description">
-                실제 공개 데이터의 값을 조회하고,
-                데이터의 출처와 시간을 함께 기록합니다.
-            </p>
-        </header>
+        <button
+            class="fixture-btn normal-btn"
+            data-fixture="T04-NORMAL-D1-A"
+        >
+            D1-A 정상
+        </button>
 
 
-        <!-- 현재 상태 -->
-        <section class="status-card">
+        <button
+            class="fixture-btn normal-btn"
+            data-fixture="T04-NORMAL-D1-B"
+        >
+            D1-B 정상
+        </button>
 
-            <div class="status-left">
-                <span class="status-dot"></span>
 
-                <div>
-                    <p class="status-label">
-                        데이터 상태
-                    </p>
+        <button
+            class="fixture-btn normal-btn"
+            data-fixture="T04-NORMAL-D2"
+        >
+            D2 정상
+        </button>
 
-                    <strong>
-                        정상적으로 조회되었습니다
-                    </strong>
-                </div>
-            </div>
 
-            <span class="status-time">
-                마지막 확인: 2026-09-07 16:52 KST
-            </span>
+        <button
+            class="fixture-btn"
+            data-fixture="T04-TIMEOUT"
+        >
+            느린 응답
+        </button>
 
-        </section>
 
+        <button
+            class="fixture-btn"
+            data-fixture="T04-AUTH-401"
+        >
+            401 거절
+        </button>
 
-        <!-- 실제 값 -->
-        <section class="main-value-card">
 
-            <p class="section-label">
-                TODAY'S VALUE
-            </p>
+        <button
+            class="fixture-btn"
+            data-fixture="T04-RATE-429"
+        >
+            호출 제한
+        </button>
 
-            <div class="value-row">
 
-                <div>
-                    <p class="currency-label">
-                        USD → KRW
-                    </p>
+        <button
+            class="fixture-btn"
+            data-fixture="T04-OFFLINE"
+        >
+            오프라인
+        </button>
 
-                    <div class="value">
-                        <span id="exchangeValue">
-                            1,385.20
-                        </span>
 
-                        <span class="unit">
-                            KRW
-                        </span>
-                    </div>
+        <button
+            class="fixture-btn"
+            data-fixture="T04-SCHEMA-BREAK"
+        >
+            형식 변경
+        </button>
 
-                    <p class="meaning">
-                        1 미국 달러를 한국 원화로 환산한 값
-                    </p>
-                </div>
+    </div>
 
 
-                <div class="unit-box">
+    <!-- 마지막 정상값 -->
 
-                    <p>
-                        단위
-                    </p>
+    <div class="last-good-card">
 
-                    <strong>
-                        KRW per 1 USD
-                    </strong>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- 데이터 정보 -->
-        <section class="info-section">
-
-            <h2>
-                데이터 정보
-            </h2>
-
-
-            <div class="info-grid">
-
-
-                <!-- 출처 -->
-                <article class="info-card">
-
-                    <span class="info-icon">
-                        ◉
-                    </span>
-
-                    <div>
-                        <p class="info-label">
-                            출처
-                        </p>
-
-                        <strong id="source">
-                            공개 환율 데이터 API
-                        </strong>
-                    </div>
-
-                </article>
-
-
-                <!-- 출처 시각 -->
-                <article class="info-card">
-
-                    <span class="info-icon">
-                        ◷
-                    </span>
-
-                    <div>
-                        <p class="info-label">
-                            출처 시각
-                        </p>
-
-                        <strong id="sourceTime">
-                            2026-09-07 16:00:00 KST
-                        </strong>
-                    </div>
-
-                </article>
-
-
-                <!-- 조회 시각 -->
-                <article class="info-card">
-
-                    <span class="info-icon">
-                        ↻
-                    </span>
-
-                    <div>
-                        <p class="info-label">
-                            조회 시각
-                        </p>
-
-                        <strong id="fetchedAt">
-                            2026-09-07 16:52:00 KST
-                        </strong>
-                    </div>
-
-                </article>
-
-
-                <!-- 기준 시간대 -->
-                <article class="info-card">
-
-                    <span class="info-icon">
-                        ◴
-                    </span>
-
-                    <div>
-                        <p class="info-label">
-                            기준 시간대
-                        </p>
-
-                        <strong>
-                            Asia/Seoul (KST)
-                        </strong>
-                    </div>
-
-                </article>
-
-
-            </div>
-
-        </section>
-
-
-        <!-- 원자료 / 저장값 / 화면값 -->
-        <section class="comparison-section">
-
-            <div class="section-title">
-                <div>
-                    <p class="eyebrow">
-                        DATA CHECK
-                    </p>
-
-                    <h2>
-                        정상 데이터 대조
-                    </h2>
-                </div>
-
-                <p>
-                    원자료 → 저장값 → 화면값이 일치하는지 확인합니다.
-                </p>
-            </div>
-
-
-            <div class="comparison-grid">
-
-
-                <!-- 원자료 -->
-                <article class="data-box raw-box">
-
-                    <div class="data-box-header">
-                        <span>
-                            01
-                        </span>
-
-                        <h3>
-                            원자료
-                        </h3>
-                    </div>
-
-
-                    <pre id="rawData">{
-  "base": "USD",
-  "target": "KRW",
-  "rate": 1385.20,
-  "sourceTime": "2026-09-07T07:00:00Z"
-}</pre>
-
-                </article>
-
-
-                <!-- 저장값 -->
-                <article class="data-box saved-box">
-
-                    <div class="data-box-header">
-                        <span>
-                            02
-                        </span>
-
-                        <h3>
-                            저장값
-                        </h3>
-                    </div>
-
-
-                    <div class="data-result">
-
-                        <p>
-                            값
-                        </p>
-
-                        <strong id="savedValue">
-                            1,385.20 KRW
-                        </strong>
-
-                    </div>
-
-                </article>
-
-
-                <!-- 화면값 -->
-                <article class="data-box display-box">
-
-                    <div class="data-box-header">
-                        <span>
-                            03
-                        </span>
-
-                        <h3>
-                            화면값
-                        </h3>
-                    </div>
-
-
-                    <div class="data-result">
-
-                        <p>
-                            현재 화면 표시값
-                        </p>
-
-                        <strong id="displayValue">
-                            1,385.20 KRW
-                        </strong>
-
-                    </div>
-
-                </article>
-
-
-            </div>
-
-
-            <div class="match-result">
-
-                <span class="check-icon">
-                    ✓
-                </span>
-
-                <div>
-                    <strong>
-                        정상 데이터 일치 확인
-                    </strong>
-
-                    <p>
-                        원자료의 환율 값과 저장값, 화면에 표시된 값이 동일합니다.
-                    </p>
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- 개인정보 안내 -->
-        <section class="privacy-card">
-
-            <span class="privacy-icon">
-                🔒
-            </span>
+        <div class="last-good-title">
 
             <div>
-
-                <strong>
-                    개인정보를 저장하지 않습니다
-                </strong>
-
-                <p>
-                    이 정보판은 공개 데이터만 조회하며,
-                    이름·이메일·계정·비밀번호 등 개인정보를 수집하거나 표시하지 않습니다.
+                <p class="eyebrow">
+                    LAST KNOWN GOOD
                 </p>
 
+                <h3>
+                    마지막 정상값
+                </h3>
             </div>
 
-        </section>
+
+            <span
+                class="stale-badge"
+                id="staleBadge"
+            >
+                FRESH
+            </span>
+
+        </div>
 
 
-        <!-- 푸터 -->
-        <footer>
+        <div
+            class="last-good-value"
+            id="lastKnownGoodValue"
+        >
+            정상 데이터를 아직 불러오지 않았습니다.
+        </div>
 
-            <p>
-                오늘의 진짜 정보판 · 실제 공개 데이터 기반
+
+        <p
+            class="last-good-date"
+            id="lastKnownGoodDate"
+        >
+            -
+        </p>
+
+    </div>
+
+
+    <!-- 다음 행동 -->
+
+    <div class="next-action-card">
+
+        <h3>
+            다음 행동
+        </h3>
+
+        <p id="nextAction">
+            정상 데이터를 조회할 수 있습니다.
+        </p>
+
+
+        <button
+            id="retryButton"
+            class="retry-button"
+            disabled
+        >
+            다시 시도
+        </button>
+
+    </div>
+
+
+    <!-- 테스트 초기화 -->
+
+    <button
+        id="resetReplay"
+        class="reset-button"
+    >
+        합성 테스트 초기화
+    </button>
+
+
+    <!-- 일별 기록 -->
+
+    <div class="history-card">
+
+        <h3>
+            합성 일별 기록
+        </h3>
+
+
+        <div id="dailyHistory">
+
+            <p class="empty-history">
+                아직 합성 기록이 없습니다.
             </p>
 
-        </footer>
+        </div>
 
+    </div>
 
-    </main>
-<script src="app.js"></script>
-</body>
-</html>
+</section>
