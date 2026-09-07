@@ -21,8 +21,7 @@
 // =========================================
 
 const API_URL =
-    "https://api.frankfurter.dev/v1/latest?base=USD&symbols=KRW";
-
+    "https://api.frankfurter.dev/v2/rate/USD/KRW";
 
 
 // =========================================
