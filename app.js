@@ -21,7 +21,7 @@
 // =========================================
 
 const API_URL =
-    "https://api.frankfurter.app/latest?from=USD&to=KRW";
+    "https://api.frankfurter.dev/v1/latest?base=USD&symbols=KRW";
 
 
 
