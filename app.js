@@ -100,6 +100,33 @@ function formatNumber(value) {
    실제 공개 환율
 ========================================================= */
 
+function copyExchangeRate() {
+    const exchangeValue = $("exchangeValue");
+    const copyButton = $("copyExchangeRate");
+
+    if (!exchangeValue || !copyButton) {
+        return;
+    }
+
+    const value = exchangeValue.textContent.trim();
+
+    if (!value || value === "-" || value === "데이터 없음") {
+        return;
+    }
+
+    navigator.clipboard.writeText(`${value} KRW`).then(() => {
+        const originalText = copyButton.textContent;
+
+        copyButton.textContent = "복사 완료!";
+
+        setTimeout(() => {
+            copyButton.textContent = originalText;
+        }, 1500);
+    }).catch((error) => {
+        console.error("환율 복사 실패:", error);
+    });
+}
+
 async function loadExchangeRate() {
 
     const exchangeValue = $("exchangeValue");
@@ -1608,6 +1635,18 @@ document.addEventListener(
            실제 공개 API 조회
         */
         loadExchangeRate();
+
+ const copyExchangeRateButton =
+            $("copyExchangeRate");
+
+        if (copyExchangeRateButton) {
+
+            copyExchangeRateButton.addEventListener(
+                "click",
+                copyExchangeRate
+            );
+
+        }
 
     }
 );
